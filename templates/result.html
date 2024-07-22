@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Scan Results</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        #status-container {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+        }
+        #result-container {
+            display: none;
+            margin-top: 20px;
+        }
+        #result {
+            white-space: pre-wrap;
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Scan Results for {{ repo_url }}</h1>
+    <div id="status-container">
+        <h2>Current Status:</h2>
+        <p id="status">Initializing scan...</p>
+    </div>
+    <div id="result-container">
+        <h2>Scan Results:</h2>
+        <pre id="result"></pre>
+    </div>
+    <a href="/">Back to Scanner</a>
+
+    <script>
+        const statusElement = document.getElementById('status');
+        const resultContainer = document.getElementById('result-container');
+        const resultElement = document.getElementById('result');
+
+        function updateStatus() {
+            fetch('/status')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status) {
+                        statusElement.textContent = data.status;
+                        setTimeout(updateStatus, 1000);
+                    } else {
+                        fetchResult();
+                    }
+                });
+        }
+
+        function fetchResult() {
+            fetch('/result?repo_url={{ repo_url }}')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.result) {
+                        resultElement.textContent = data.result;
+                        resultContainer.style.display = 'block';
+                        statusElement.textContent = 'Scan completed';
+                    } else {
+                        setTimeout(fetchResult, 1000);
+                    }
+                });
+        }
+
+        updateStatus();
+    </script>
+</body>
+</html>
